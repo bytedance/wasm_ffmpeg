@@ -1,7 +1,8 @@
 /*
  * copyright (c) 2001 Fabrice Bellard
- *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -685,6 +686,8 @@ enum AVCodecID {
                                 * stream (only used by libavformat) */
     AV_CODEC_ID_FFMETADATA = 0x21000,   ///< Dummy codec for streams containing only metadata information.
     AV_CODEC_ID_WRAPPED_AVFRAME = 0x21001, ///< Passthrough codec, AVFrames wrapped in AVPacket
+    AV_CODEC_ID_AC4 = 0x31000, //dolby ac4 codec
+    AV_CODEC_ID_BYTE_VC1 = 0xAE, //ByteDance VC1 codec
 };
 
 /**
@@ -1583,6 +1586,12 @@ enum AVPacketSideDataType {
      * to the AVSphericalMapping structure.
      */
     AV_PKT_DATA_SPHERICAL,
+
+    /**
+     * 
+     * 
+     */
+    AV_PKT_WEBCODECS_IS_DROP_FRAME,
 
     /**
      * The number of side data elements (in fact a bit more than it).

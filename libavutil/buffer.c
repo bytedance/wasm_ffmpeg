@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,6 +70,7 @@ AVBufferRef *av_buffer_alloc(int size)
 {
     AVBufferRef *ret = NULL;
     uint8_t    *data = NULL;
+
 
     data = av_malloc(size);
     if (!data)

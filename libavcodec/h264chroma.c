@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,4 +58,7 @@ av_cold void ff_h264chroma_init(H264ChromaContext *c, int bit_depth)
         ff_h264chroma_init_x86(c, bit_depth);
     if (ARCH_MIPS)
         ff_h264chroma_init_mips(c, bit_depth);
+#if CONFIG_WASMSIMD
+    ff_h264chroma_init_wasm(c, bit_depth);
+#endif
 }

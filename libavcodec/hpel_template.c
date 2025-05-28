@@ -2,7 +2,9 @@
  * Copyright (c) 2000, 2001 Fabrice Bellard
  * Copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -104,3 +106,46 @@ DEF_HPEL(avg, op_avg)
 DEF_HPEL(put, op_put)
 #undef op_avg
 #undef op_put
+
+
+// static inline void avg_pixels8_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, int dst_stride, int src_stride1, int src_stride2, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         uint32_t a, b;
+//         a = (((const union unaligned_32 *)(&src1[i * src_stride1]))->l);
+//         b = (((const union unaligned_32 *)(&src2[i * src_stride2]))->l);
+//         op_avg(*((uint32_t *)&dst[i * dst_stride]), rnd_avg32(a, b));
+//         a = (((const union unaligned_32 *)(&src1[i * src_stride1 + 4 * sizeof(uint8_t)]))->l);
+//         b = (((const union unaligned_32 *)(&src2[i * src_stride2 + 4 * sizeof(uint8_t)]))->l);
+//         op_avg(*((uint32_t *)&dst[i * dst_stride + 4 * sizeof(uint8_t)]), rnd_avg32(a, b));
+//     }
+// }
+// static inline void avg_pixels4_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, int dst_stride, int src_stride1, int src_stride2, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         uint32_t a, b;
+//         a = (((const union unaligned_32 *)(&src1[i * src_stride1]))->l);
+//         b = (((const union unaligned_32 *)(&src2[i * src_stride2]))->l);
+//         op_avg(*((uint32_t *)&dst[i * dst_stride]), rnd_avg32(a, b));
+//     }
+// }
+// static inline void avg_pixels2_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, int dst_stride, int src_stride1, int src_stride2, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         uint32_t a, b;
+//         a = (((const union unaligned_16 *)(&src1[i * src_stride1]))->l);
+//         b = (((const union unaligned_16 *)(&src2[i * src_stride2]))->l);
+//         op_avg(*((uint16_t *)&dst[i * dst_stride]), rnd_avg32(a, b));
+//     }
+// }
+// static inline void avg_pixels16_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, int dst_stride, int src_stride1, int src_stride2, int h)
+// {
+//     avg_pixels8_l2_8(dst, src1, src2, dst_stride, src_stride1, src_stride2, h);
+//     avg_pixels8_l2_8(dst + 8 * sizeof(uint8_t), src1 + 8 * sizeof(uint8_t), src2 + 8 * sizeof(uint8_t), dst_stride, src_stride1, src_stride2, h);
+// }

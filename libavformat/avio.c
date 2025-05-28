@@ -2,7 +2,9 @@
  * unbuffered I/O
  * Copyright (c) 2001 Fabrice Bellard
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -272,6 +274,38 @@ static const struct URLProtocol *url_find_protocol(const char *filename)
     protocols = ffurl_get_protocols(NULL, NULL);
     if (!protocols)
         return NULL;
+
+    //blob:https://{ip}:{port}/{id} must before http check
+    if(!strcmp(proto_str, "blob")){
+        for (i = 0; protocols[i]; i++) {
+            URLProtocol *up = protocols[i];
+            if (!strcmp(up->name, "blob")) {
+                av_freep(&protocols);
+                return up;
+            }
+        }
+    }
+    //replace http with ems
+    if(!strcmp(proto_str, "http")){
+        for (i = 0; protocols[i]; i++) {
+            URLProtocol *up = protocols[i];
+            if (!strcmp(up->name, "tejshttp")) {
+                av_freep(&protocols);
+                return up;
+            }
+        }
+    }
+    //replace https with ems
+    if(!strcmp(proto_str, "https")){
+        for (i = 0; protocols[i]; i++) {
+            URLProtocol *up = protocols[i];
+            if (!strcmp(up->name, "tejshttp")) {
+                av_freep(&protocols);
+                return up;
+            }
+        }
+    }
+
     for (i = 0; protocols[i]; i++) {
             const URLProtocol *up = protocols[i];
         if (!strcmp(proto_str, up->name)) {

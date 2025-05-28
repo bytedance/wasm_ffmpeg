@@ -2,7 +2,9 @@
  * H.26L/H.264/AVC/JVT/14496-10/... encoder/decoder
  * Copyright (c) 2003 Michael Niedermayer <michaelni@gmx.at>
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -121,6 +123,9 @@ void ff_h264_pred_init_arm(H264PredContext *h, int codec_id,
 void ff_h264_pred_init_x86(H264PredContext *h, int codec_id,
                            const int bit_depth, const int chroma_format_idc);
 void ff_h264_pred_init_mips(H264PredContext *h, int codec_id,
+                            const int bit_depth, const int chroma_format_idc);
+
+void ff_h264_pred_init_wasm(H264PredContext *h, int codec_id,
                             const int bit_depth, const int chroma_format_idc);
 
 #endif /* AVCODEC_H264PRED_H */

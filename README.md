@@ -1,48 +1,23 @@
-FFmpeg README
+CCCreator WASM FFmpeg README
+base on FFmpeg RELEASE-3.3.9
 =============
 
-FFmpeg is a collection of libraries and tools to process multimedia content
-such as audio, video, subtitles and related metadata.
+This repository hosts a customized version of FFmpeg, building upon the official FFmpeg project.
+It includes the standard suite of FFmpeg libraries and tools, augmented with our proprietary
+codecs and specialized audio/video processing enhancements. The original FFmpeg project
+provides a comprehensive collection of libraries and tools for handling multimedia content
+such as audio, video, subtitles, and related metadata.
 
-## Libraries
+## Custom Features
 
-* `libavcodec` provides implementation of a wider range of codecs.
-* `libavformat` implements streaming protocols, container formats and basic I/O access.
-* `libavutil` includes hashers, decompressors and miscellaneous utility functions.
-* `libavfilter` provides a mean to alter decoded Audio and Video through chain of filters.
-* `libavdevice` provides an abstraction to access capture and playback devices.
-* `libswresample` implements audio mixing and resampling routines.
-* `libswscale` implements color conversion and scaling routines.
+This version of FFmpeg has been enhanced with several custom features developed by our team:
 
-## Tools
+*   **Proprietary Codecs:** Integration of in-house developed codecs to support specialized multimedia formats and workflows.
+*   **Advanced Audio/Video Capabilities:** Introduction of new and improved audio/video processing functions, offering extended capabilities beyond the standard FFmpeg toolkit.
 
-* [ffmpeg](https://ffmpeg.org/ffmpeg.html) is a command line toolbox to
-  manipulate, convert and stream multimedia content.
-* [ffplay](https://ffmpeg.org/ffplay.html) is a minimalistic multimedia player.
-* [ffprobe](https://ffmpeg.org/ffprobe.html) is a simple analysis tool to inspect
-  multimedia content.
-* [ffserver](https://ffmpeg.org/ffserver.html) is a multimedia streaming server
-  for live broadcasts.
-* Additional small tools such as `aviocat`, `ismindex` and `qt-faststart`.
-
-## Documentation
-
-The offline documentation is available in the **doc/** directory.
-
-The online documentation is available in the main [website](https://ffmpeg.org)
-and in the [wiki](https://trac.ffmpeg.org).
-
-### Examples
-
-Coding examples are available in the **doc/examples** directory.
+(Further details or links to specific documentation for these custom features can be added here.)
 
 ## License
 
-FFmpeg codebase is mainly LGPL-licensed with optional components licensed under
-GPL. Please refer to the LICENSE file for detailed information.
-
-## Contributing
-
-Patches should be submitted to the ffmpeg-devel mailing list using
-`git format-patch` or `git send-email`. Github pull requests should be
-avoided because they are not part of our review process and will be ignored.
+This project is adapted from FFmpeg( GitHub - FFmpeg/FFmpeg: Mirror of https://git.ffmpeg.org/ffmpeg.git), which is licensed under this license（https://github.com/FFmpeg/FFmpeg/tree/master?tab=License-1-ov-file）.
+The modifications we made are licensed under GNU Lesser General Public License version 2.1 or later (LGPL v2.1+), read the file COPYING.LGPLv2.1 for details.

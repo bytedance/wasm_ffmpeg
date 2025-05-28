@@ -4,6 +4,7 @@ NAME = swscale
 
 HEADERS = swscale.h                                                     \
           version.h                                                     \
+          *.h                                                           \
 
 OBJS = alphablend.o                                     \
        hscale.o                                         \

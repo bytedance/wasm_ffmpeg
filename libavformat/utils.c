@@ -2,7 +2,9 @@
  * various utility functions for use within FFmpeg
  * Copyright (c) 2000, 2001, 2002 Fabrice Bellard
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,6 +47,7 @@
 #include "avio_internal.h"
 #include "id3v2.h"
 #include "internal.h"
+#include  <emscripten/emscripten.h>
 #include "metadata.h"
 #if CONFIG_NETWORK
 #include "network.h"
@@ -982,6 +985,7 @@ static int is_intra_only(enum AVCodecID id)
 static int has_decode_delay_been_guessed(AVStream *st)
 {
     if (st->codecpar->codec_id != AV_CODEC_ID_H264) return 1;
+
     if (!st->info) // if we have left find_stream_info then nb_decoded_frames won't increase anymore for stream copy
         return 1;
 #if CONFIG_H264_DECODER
@@ -2435,15 +2439,26 @@ static int seek_frame_internal(AVFormatContext *s, int stream_index,
     if (ret >= 0)
         return 0;
 
+    // if (s->iformat->read_timestamp &&
+    //     !(s->iformat->flags & AVFMT_NOBINSEARCH)) {
+    //     ff_read_frame_flush(s);
+    //     return ff_seek_frame_binary(s, stream_index, timestamp, flags);
+    // } else if (!(s->iformat->flags & AVFMT_NOGENSEARCH)) {
+    //     ff_read_frame_flush(s);
+    //     return seek_frame_generic(s, stream_index, timestamp, flags);
+    // } else
+        // return -1;
     if (s->iformat->read_timestamp &&
         !(s->iformat->flags & AVFMT_NOBINSEARCH)) {
         ff_read_frame_flush(s);
-        return ff_seek_frame_binary(s, stream_index, timestamp, flags);
+        ff_seek_frame_binary(s, stream_index, timestamp, flags);
+        return 0;
     } else if (!(s->iformat->flags & AVFMT_NOGENSEARCH)) {
         ff_read_frame_flush(s);
-        return seek_frame_generic(s, stream_index, timestamp, flags);
+        seek_frame_generic(s, stream_index, timestamp, flags);
+        return 0;
     } else
-        return -1;
+        return 0;
 }
 
 int av_seek_frame(AVFormatContext *s, int stream_index,

@@ -2,7 +2,9 @@
  * pixel format descriptor
  * Copyright (c) 2009 Michael Niedermayer <michaelni@gmx.at>
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -460,6 +462,72 @@ static const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         },
         .flags = AV_PIX_FMT_FLAG_PLANAR,
     },
+
+    /*
+    [AV_PIX_FMT_YUVA420P] = {
+        .name = "yuva420p",
+        .nb_components = 4,
+        .log2_chroma_w = 1,
+        .log2_chroma_h = 1,
+        .comp = {
+            { 0, 1, 0, 0, 8, 0, 7, 1 }, 
+            { 1, 1, 0, 0, 8, 0, 7, 1 }, 
+            { 2, 1, 0, 0, 8, 0, 7, 1 },
+            { 3, 1, 0, 0, 8, 0, 7, 1 },
+        },
+        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_ALPHA,
+    },*/
+
+    [AV_PIX_FMT_NV12A] = {
+        .name = "nv12a",
+        .nb_components = 4,
+        .log2_chroma_w = 1,
+        .log2_chroma_h = 1,
+        .comp = {
+            { 0, 1, 0, 0, 8, 0, 7, 1 },        /* Y */
+            { 1, 2, 0, 0, 8, 1, 7, 1 },        /* U */
+            { 1, 2, 1, 0, 8, 1, 7, 2 },        /* V */
+            { 2, 1, 0, 0, 8, 0, 7, 1 },
+        },
+        .flags = AV_PIX_FMT_FLAG_PLANAR | AV_PIX_FMT_FLAG_ALPHA,
+    },
+
+    /*
+    [AV_PIX_FMT_NV12A] = {
+        .name = "nv12a",
+        .nb_components = 4,
+        .log2_chroma_w = 1,
+        .log2_chroma_h = 1,
+        .comp = {
+            { 0, 1, 0, 0, 8, 0, 7, 1 }, 
+            { 1, 2, 0, 0, 8, 1, 7, 1 },
+            { 1, 2, 1, 0, 8, 1, 7, 2 }, 
+            { 2, 1, 0, 0, 8, 0, 7, 1 }, 
+        },
+        .flags = AV_PIX_FMT_FLAG_PLANAR,
+    },
+    */
+    [AV_PIX_FMT_NV21A] = {
+        .name = "nv21a",
+        .nb_components = 4,
+        .log2_chroma_w = 1,
+        .log2_chroma_h = 1,
+        .comp = {
+            { 0, 1, 0, 0, 8, 0, 7, 1 },        /* Y */
+            { 1, 2, 1, 0, 8, 1, 7, 2 },        /* U */
+            { 1, 2, 0, 0, 8, 1, 7, 1 },        /* V */
+            { 2, 1, 0, 0, 8, 0, 7, 1 },        /* A */
+        },
+        .flags = AV_PIX_FMT_FLAG_PLANAR,
+    },
+
+    [AV_PIX_FMT_WEBCODEC] = {
+        .name = "webcodec",
+        .flags = AV_PIX_FMT_FLAG_HWACCEL,
+    },
+
+
+
     [AV_PIX_FMT_ARGB] = {
         .name = "argb",
         .nb_components = 4,

@@ -1,7 +1,9 @@
 /*
  * Copyright (c) 2003-2010 Michael Niedermayer <michaelni@gmx.at>
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +29,7 @@
 #ifndef AVCODEC_H264DSP_H
 #define AVCODEC_H264DSP_H
 
+#include "config.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -129,5 +132,8 @@ void ff_h264dsp_init_x86(H264DSPContext *c, const int bit_depth,
                          const int chroma_format_idc);
 void ff_h264dsp_init_mips(H264DSPContext *c, const int bit_depth,
                           const int chroma_format_idc);
-
+#if CONFIG_WASMSIMD
+void ff_h264dsp_init_wasm(H264DSPContext *c, const int bit_depth,
+                          const int chroma_format_idc);
+#endif
 #endif /* AVCODEC_H264DSP_H */

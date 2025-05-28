@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +28,7 @@
 
 #include <stdatomic.h>
 #include <stdint.h>
+#include <emscripten.h>
 
 #include "avcodec.h"
 #include "hwaccel.h"
@@ -156,6 +159,7 @@ static void async_unlock(FrameThreadContext *fctx)
     pthread_mutex_unlock(&fctx->async_mutex);
 }
 
+
 /**
  * Codec worker thread.
  *
@@ -165,69 +169,71 @@ static void async_unlock(FrameThreadContext *fctx)
  */
 static attribute_align_arg void *frame_worker_thread(void *arg)
 {
-    PerThreadContext *p = arg;
-    AVCodecContext *avctx = p->avctx;
-    const AVCodec *codec = avctx->codec;
+    // emscripten_set_main_loop_arg(frame_worker_thread_loop, arg, 0, 1);
+    // emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
+   PerThreadContext *p = arg;
+   AVCodecContext *avctx = p->avctx;
+   const AVCodec *codec = avctx->codec;
 
-    pthread_mutex_lock(&p->mutex);
-    while (1) {
-        while (atomic_load(&p->state) == STATE_INPUT_READY && !p->die)
-            pthread_cond_wait(&p->input_cond, &p->mutex);
+   pthread_mutex_lock(&p->mutex);
+   while (1) {
+       while (atomic_load(&p->state) == STATE_INPUT_READY && !p->die)
+           pthread_cond_wait(&p->input_cond, &p->mutex);
 
-        if (p->die) break;
+       if (p->die) break;
 
-        if (!codec->update_thread_context && THREAD_SAFE_CALLBACKS(avctx))
-            ff_thread_finish_setup(avctx);
+       if (!codec->update_thread_context && THREAD_SAFE_CALLBACKS(avctx))
+           ff_thread_finish_setup(avctx);
 
-        /* If a decoder supports hwaccel, then it must call ff_get_format().
-         * Since that call must happen before ff_thread_finish_setup(), the
-         * decoder is required to implement update_thread_context() and call
-         * ff_thread_finish_setup() manually. Therefore the above
-         * ff_thread_finish_setup() call did not happen and hwaccel_serializing
-         * cannot be true here. */
-        av_assert0(!p->hwaccel_serializing);
+       /* If a decoder supports hwaccel, then it must call ff_get_format().
+        * Since that call must happen before ff_thread_finish_setup(), the
+        * decoder is required to implement update_thread_context() and call
+        * ff_thread_finish_setup() manually. Therefore the above
+        * ff_thread_finish_setup() call did not happen and hwaccel_serializing
+        * cannot be true here. */
+       av_assert0(!p->hwaccel_serializing);
 
-        /* if the previous thread uses hwaccel then we take the lock to ensure
-         * the threads don't run concurrently */
-        if (avctx->hwaccel) {
-            pthread_mutex_lock(&p->parent->hwaccel_mutex);
-            p->hwaccel_serializing = 1;
-        }
+       /* if the previous thread uses hwaccel then we take the lock to ensure
+        * the threads don't run concurrently */
+       if (avctx->hwaccel) {
+           pthread_mutex_lock(&p->parent->hwaccel_mutex);
+           p->hwaccel_serializing = 1;
+       }
 
-        av_frame_unref(p->frame);
-        p->got_frame = 0;
-        p->result = codec->decode(avctx, p->frame, &p->got_frame, &p->avpkt);
+       av_frame_unref(p->frame);
+       p->got_frame = 0;
+       p->result = codec->decode(avctx, p->frame, &p->got_frame, &p->avpkt);
 
-        if ((p->result < 0 || !p->got_frame) && p->frame->buf[0]) {
-            if (avctx->internal->allocate_progress)
-                av_log(avctx, AV_LOG_ERROR, "A frame threaded decoder did not "
-                       "free the frame on failure. This is a bug, please report it.\n");
-            av_frame_unref(p->frame);
-        }
+       if ((p->result < 0 || !p->got_frame) && p->frame->buf[0]) {
+           if (avctx->internal->allocate_progress)
+               av_log(avctx, AV_LOG_ERROR, "A frame threaded decoder did not "
+                      "free the frame on failure. This is a bug, please report it.\n");
+           av_frame_unref(p->frame);
+       }
 
-        if (atomic_load(&p->state) == STATE_SETTING_UP)
-            ff_thread_finish_setup(avctx);
+       if (atomic_load(&p->state) == STATE_SETTING_UP)
+           ff_thread_finish_setup(avctx);
 
-        if (p->hwaccel_serializing) {
-            p->hwaccel_serializing = 0;
-            pthread_mutex_unlock(&p->parent->hwaccel_mutex);
-        }
+       if (p->hwaccel_serializing) {
+           p->hwaccel_serializing = 0;
+           pthread_mutex_unlock(&p->parent->hwaccel_mutex);
+       }
 
-        if (p->async_serializing) {
-            p->async_serializing = 0;
+       if (p->async_serializing) {
+           p->async_serializing = 0;
 
-            async_unlock(p->parent);
-        }
+           async_unlock(p->parent);
+       }
 
-        pthread_mutex_lock(&p->progress_mutex);
+       pthread_mutex_lock(&p->progress_mutex);
 
-        atomic_store(&p->state, STATE_INPUT_READY);
+       atomic_store(&p->state, STATE_INPUT_READY);
 
-        pthread_cond_broadcast(&p->progress_cond);
-        pthread_cond_signal(&p->output_cond);
-        pthread_mutex_unlock(&p->progress_mutex);
-    }
-    pthread_mutex_unlock(&p->mutex);
+       pthread_cond_broadcast(&p->progress_cond);
+       pthread_cond_signal(&p->output_cond);
+       pthread_mutex_unlock(&p->progress_mutex);
+   }
+   pthread_mutex_unlock(&p->mutex);
 
     return NULL;
 }

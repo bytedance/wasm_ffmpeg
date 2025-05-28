@@ -19,6 +19,8 @@ HEADERS = avcodec.h                                                     \
           videotoolbox.h                                                \
           vorbis_parser.h                                               \
           xvmc.h                                                        \
+          *.h                                                           \
+          ttexport.h                                                    \
 
 OBJS = allcodecs.o                                                      \
        audioconvert.o                                                   \
@@ -49,8 +51,11 @@ OBJS = allcodecs.o                                                      \
        utils.o                                                          \
        vorbis_parser.o                                                  \
        xiph.o                                                           \
+       h264wasm.o                                                       \
+       ttexport.o                                                       \
 
 # subsystems
+OBJS-$(CONFIG_WASMSIMD) += wasm/h264dsp_wasm.o wasm/h264qpel_wasm.o wasm/hpeldsp_wasm.o wasm/h264chroma_wasm_init.o wasm/h264pred_init_wasm.o
 OBJS-$(CONFIG_AANDCTTABLES)            += aandcttab.o
 OBJS-$(CONFIG_AC3DSP)                  += ac3dsp.o
 OBJS-$(CONFIG_AUDIO_FRAME_QUEUE)       += audio_frame_queue.o

@@ -3,7 +3,9 @@
  * Copyright (c) 2010 Martin Storsjo
  * Copyright (c) 2013 Anssi Hannula
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,6 +39,7 @@
 #include "internal.h"
 #include "avio_internal.h"
 #include "id3v2.h"
+#include "emscripten.h"
 
 #define INITIAL_BUFFER_SIZE 32768
 
@@ -618,7 +621,15 @@ static int open_url(AVFormatContext *s, AVIOContext **pb, const char *url,
 
     if (!proto_name)
         return AVERROR_INVALIDDATA;
-
+    //replace ems with http
+    if(!strcmp(proto_name, "ems") || !strcmp(proto_name, "tejshttp")){
+        if(url[4] == ':'){
+            proto_name = "http";
+        }
+        if(url[5] == ':'){
+            proto_name = "https";
+        }
+    }
     // only http(s) & file are allowed
     if (av_strstart(proto_name, "file", NULL)) {
         if (strcmp(c->allowed_extensions, "ALL") && !av_match_ext(url, c->allowed_extensions)) {
@@ -1787,6 +1798,7 @@ static int hls_read_header(AVFormatContext *s)
         pls->ctx->pb       = &pls->pb;
         pls->ctx->io_open  = nested_io_open;
         pls->ctx->flags   |= s->flags;
+        pls->ctx->probesize = s->probesize > 0 ? s->probesize : 1024 * 4;   
 
         if ((ret = ff_copy_whiteblacklists(pls->ctx, s)) < 0)
             goto fail;
@@ -1969,7 +1981,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
                     ts_diff = av_rescale_rnd(pls->pkt.dts, AV_TIME_BASE,
                                             tb.den, AV_ROUND_DOWN) -
                             pls->seek_timestamp;
-                    if (ts_diff >= 0 && (pls->seek_flags  & AVSEEK_FLAG_ANY ||
+                    if ((pls->seek_flags  & AVSEEK_FLAG_ANY ||
                                         pls->pkt.flags & AV_PKT_FLAG_KEY)) {
                         pls->seek_timestamp = AV_NOPTS_VALUE;
                         break;

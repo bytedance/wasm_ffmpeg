@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +41,12 @@ typedef struct URLContext {
     const AVClass *av_class;    /**< information for av_log(). Set by url_open(). */
     const struct URLProtocol *prot;
     void *priv_data;
-    char *filename;             /**< specified URL */
+    char *filename;
+    uint8_t *buf;
+    int uri;
+    int buf_size;
+    int buf_read_ptr;    
+    int buf_reach_end;         /**< specified URL */
     int flags;
     int max_packet_size;        /**< if non zero, the stream is packetized with this max packet size */
     int is_streamed;            /**< true if streamed (no seek possible), default = false */
@@ -339,4 +346,12 @@ const AVClass *ff_urlcontext_child_class_next(const AVClass *prev);
 const URLProtocol **ffurl_get_protocols(const char *whitelist,
                                         const char *blacklist);
 
+
+typedef struct JSHttpContext {
+    void* ( *tejs_http_init)(const char * url);
+    int  ( *tejs_http_read)(void * http, uint8_t *buf, int size);
+    int  ( *tejs_http_uninit)(void * http);
+}JSHttpContext;
+
+void register_tejs_http(JSHttpContext* tejs_http_ctx);
 #endif /* AVFORMAT_URL_H */

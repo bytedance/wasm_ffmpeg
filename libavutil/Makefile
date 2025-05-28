@@ -73,6 +73,7 @@ HEADERS = adler32.h                                                     \
           twofish.h                                                     \
           version.h                                                     \
           xtea.h                                                        \
+          *.h                                                           \
           tea.h                                                         \
 
 HEADERS-$(CONFIG_LZO)                   += lzo.h

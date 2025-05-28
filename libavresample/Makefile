@@ -1,6 +1,7 @@
 NAME = avresample
 
 HEADERS = avresample.h                                                  \
+          *.h                                                           \
           version.h                                                     \
 
 OBJS = audio_convert.o                                                  \

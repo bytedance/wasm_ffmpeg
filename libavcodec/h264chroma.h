@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,5 +38,6 @@ void ff_h264chroma_init_arm(H264ChromaContext *c, int bit_depth);
 void ff_h264chroma_init_ppc(H264ChromaContext *c, int bit_depth);
 void ff_h264chroma_init_x86(H264ChromaContext *c, int bit_depth);
 void ff_h264chroma_init_mips(H264ChromaContext *c, int bit_depth);
+void ff_h264chroma_init_wasm(H264ChromaContext *c, int bit_depth);
 
 #endif /* AVCODEC_H264CHROMA_H */

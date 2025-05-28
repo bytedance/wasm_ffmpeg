@@ -2,7 +2,9 @@
  * H.26L/H.264/AVC/JVT/14496-10/... encoder/decoder
  * Copyright (c) 2003 Michael Niedermayer <michaelni@gmx.at>
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -125,6 +127,27 @@ static av_always_inline int get_cabac_inline(CABACContext *c, uint8_t * const st
     if(!(c->low & CABAC_MASK))
         refill2(c);
     return bit;
+
+
+    // int s = *state;
+    // int RangeLPS= ff_h264_lps_range[2*(c->range&0xC0) + s];
+    // int bit, lps_mask;
+    // int rangeTmp = c->range - RangeLPS;
+    // lps_mask= ((rangeTmp<<(CABAC_BITS+1)) - c->low)>>31;
+
+    // int lowTmp = c->low - ((rangeTmp<<(CABAC_BITS+1)) & lps_mask);
+    // rangeTmp += (RangeLPS - rangeTmp) & lps_mask;
+
+    // s^=lps_mask;
+    // *state= (ff_h264_mlps_state+128)[s];
+    // bit= s&1;
+
+    // lps_mask= ff_h264_norm_shift[rangeTmp];
+    // c->range = rangeTmp << lps_mask;
+    // c->low  = lowTmp << lps_mask;
+    // if(!(c->low & CABAC_MASK))
+    //     refill2(c);
+    // return bit;
 }
 #endif
 

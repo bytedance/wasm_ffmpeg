@@ -4,7 +4,8 @@ NAME = avformat
 
 HEADERS = avformat.h                                                    \
           avio.h                                                        \
-          version.h                                                     \
+          *.h                                                           \
+          version.h
 
 OBJS = allformats.o         \
        avio.o               \
@@ -544,6 +545,9 @@ OBJS-$(CONFIG_LIBSSH_PROTOCOL)           += libssh.o
 OBJS-$(CONFIG_LIBSMBCLIENT_PROTOCOL)     += libsmbclient.o
 
 # protocols I/O
+# OBJS-$(CONFIG_BLOB_PROTOCOL)             += blob_io.o
+OBJS-$(CONFIG_TEJSHTTP_PROTOCOL)         += tejshttp.o
+
 OBJS-$(CONFIG_ASYNC_PROTOCOL)            += async.o
 OBJS-$(CONFIG_APPLEHTTP_PROTOCOL)        += hlsproto.o
 OBJS-$(CONFIG_BLURAY_PROTOCOL)           += bluray.o

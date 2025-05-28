@@ -1,5 +1,7 @@
 /*
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -78,3 +80,40 @@ DEF_PEL(avg, op_avg)
 DEF_PEL(put, op_put)
 #undef op_avg
 #undef op_put
+
+// static inline void avg_pixels2_8_c(uint8_t *block, const uint8_t *pixels, ptrdiff_t line_size, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         op_avg(*((uint16_t *)block), (((const union unaligned_16 *)(pixels))->l));
+//         pixels += line_size;
+//         block += line_size;
+//     }
+// }
+// static inline void avg_pixels4_8_c(uint8_t *block, const uint8_t *pixels, ptrdiff_t line_size, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         op_avg(*((uint32_t *)block), (((const union unaligned_32 *)(pixels))->l));
+//         pixels += line_size;
+//         block += line_size;
+//     }
+// }
+// static inline void avg_pixels8_8_c(uint8_t *block, const uint8_t *pixels, ptrdiff_t line_size, int h)
+// {
+//     int i;
+//     for (i = 0; i < h; i++)
+//     {
+//         op_avg(*((uint32_t *)block), (((const union unaligned_32 *)(pixels))->l));
+//         op_avg(*((uint32_t *)(block + 4 * sizeof(uint8_t))), (((const union unaligned_32 *)(pixels + 4 * sizeof(uint8_t)))->l));
+//         pixels += line_size;
+//         block += line_size;
+//     }
+// }
+// static void avg_pixels16_8_c(uint8_t *block, const uint8_t *pixels, ptrdiff_t line_size, int h)
+// {
+//     avg_pixels8_8_c(block, pixels, line_size, h);
+//     avg_pixels8_8_c(block + 8 * sizeof(uint8_t), pixels + 8 * sizeof(uint8_t), line_size, h);
+// }

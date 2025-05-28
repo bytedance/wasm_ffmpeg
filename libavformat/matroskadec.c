@@ -2,7 +2,9 @@
  * Matroska file demuxer
  * Copyright (c) 2003-2008 The FFmpeg Project
  *
+ * Copyright (c) 2025 [ByteDance Ltd. and/or its affiliates.]
  * This file is part of FFmpeg.
+ * This file has been modified by [ByteDance Ltd. and/or its affiliates.]
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -364,6 +366,8 @@ typedef struct MatroskaDemuxContext {
 
     /* WebM DASH Manifest live flag/ */
     int is_live;
+    
+    int enable_demuxer_opt;
 } MatroskaDemuxContext;
 
 typedef struct MatroskaBlock {
@@ -3488,18 +3492,102 @@ static int matroska_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
+
+/*
+ * This function prepares the status for parsing of level 1 elements.
+ */
+static int matroska_reset_status(MatroskaDemuxContext *matroska,
+                                 uint32_t id, int64_t position)
+{
+    if (position >= 0) {
+        int64_t err = avio_seek(matroska->ctx->pb, position, SEEK_SET);
+        if (err < 0)
+            return err;
+    }
+
+    matroska->current_id    = id;
+    matroska->num_levels    = 1;
+
+    return 0;
+}
+
+static int64_t matroska_find_closest_pos(AVFormatContext* s, int stream_index, int64_t timestamp, int flags) {
+    MatroskaDemuxContext* matroska = s->priv_data;
+    MatroskaTrack* tracks = NULL;
+    AVStream* st = s->streams[stream_index];
+    int64_t ts = timestamp, pos = -1;
+    int index = -1;
+    if (st->nb_index_entries) {
+        ts = FFMAX(timestamp, st->index_entries[0].timestamp);
+        index = av_index_search_timestamp(st, ts, flags);
+        if (index >= 0 && index < st->nb_index_entries) {
+            pos = st->index_entries[index].pos;
+        }
+    }
+    int i = 0;
+    for (i = 0; i < s->nb_streams; ++i) {
+        st = s->streams[i];
+        if (i == stream_index || !st->nb_index_entries || st->codecpar->codec_type != AVMEDIA_TYPE_VIDEO) {
+            continue;
+        }
+        ts = FFMAX(timestamp, st->index_entries[0].timestamp);
+        index = av_index_search_timestamp(st, ts, flags);
+
+        if (index < 0 || index >= st->nb_index_entries) {
+            continue;
+        }
+        pos = FFMAX(st->index_entries[index].pos, pos);
+    }
+    return pos;
+}
+
+
+static int matroska_seek_generic(AVFormatContext* s, int stream_index,
+    int64_t timestamp, int flags) {
+    MatroskaDemuxContext* matroska = s->priv_data;
+    MatroskaTrack* tracks = NULL;
+    AVStream* st = s->streams[stream_index];
+    int i;
+    int64_t pos = matroska_find_closest_pos(s, stream_index, timestamp, flags);
+    if (pos < 0) {
+        return -1;
+    }
+
+    tracks = matroska->tracks.elem;
+    for (i = 0; i < matroska->tracks.nb_elem; i++) {
+        tracks[i].audio.pkt_cnt = 0;
+        tracks[i].audio.sub_packet_cnt = 0;
+        tracks[i].audio.buf_timecode = AV_NOPTS_VALUE;
+        tracks[i].end_timecode = 0;
+    }
+
+    matroska_reset_status(matroska, 0, pos);
+    matroska->skip_to_keyframe = 1;
+    matroska->skip_to_timecode = timestamp;
+    matroska->done             = 0;
+    matroska->num_levels       = 0;
+    matroska_clear_queue(matroska);
+    return 0;
+}
+
 static int matroska_read_seek(AVFormatContext *s, int stream_index,
                               int64_t timestamp, int flags)
 {
     MatroskaDemuxContext *matroska = s->priv_data;
     MatroskaTrack *tracks = NULL;
     AVStream *st = s->streams[stream_index];
-    int i, index, index_min;
+    int i, index, index_min, ret;
 
     /* Parse the CUES now since we need the index data to seek. */
     if (matroska->cues_parsing_deferred > 0) {
         matroska->cues_parsing_deferred = 0;
         matroska_parse_cues(matroska);
+    }
+
+    if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && matroska->enable_demuxer_opt) {
+        ret = matroska_seek_generic(s, stream_index, timestamp, flags);
+        if (ret >= 0)
+            return 0;
     }
 
     if (!st->nb_index_entries)
@@ -3545,15 +3633,18 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
     ff_update_cur_dts(s, st, st->index_entries[index].timestamp);
     return 0;
 err:
-    // slightly hackish but allows proper fallback to
-    // the generic seeking code.
-    matroska_clear_queue(matroska);
-    matroska->current_id = 0;
-    st->skip_to_keyframe =
-    matroska->skip_to_keyframe = 0;
-    matroska->done = 0;
-    matroska->num_levels = 0;
-    return -1;
+    ret = matroska_seek_generic(s, stream_index, timestamp, flags);
+    if (ret < 0) {
+        // slightly hackish but allows proper fallback to
+        // the generic seeking code.
+        matroska_clear_queue(matroska);
+        matroska->current_id = 0;
+        st->skip_to_keyframe =
+        matroska->skip_to_keyframe = 0;
+        matroska->done = 0;
+        matroska->num_levels = 0;
+    }
+    return ret;
 }
 
 static int matroska_read_close(AVFormatContext *s)
@@ -3941,6 +4032,18 @@ static const AVClass webm_dash_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
+static const AVOption matroska_options[] = {
+    { "enable_demuxer_opt", "enable optimization when read seek.", OFFSET(enable_demuxer_opt), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
+    { NULL },
+};
+
+static const AVClass matroska_class = {
+    .class_name = "matroska demuxer",
+    .item_name = av_default_item_name,
+    .option = matroska_options,
+    .version = LIBAVUTIL_VERSION_INT,
+};
+
 AVInputFormat ff_matroska_demuxer = {
     .name           = "matroska,webm",
     .long_name      = NULL_IF_CONFIG_SMALL("Matroska / WebM"),
@@ -3951,7 +4054,8 @@ AVInputFormat ff_matroska_demuxer = {
     .read_packet    = matroska_read_packet,
     .read_close     = matroska_read_close,
     .read_seek      = matroska_read_seek,
-    .mime_type      = "audio/webm,audio/x-matroska,video/webm,video/x-matroska"
+    .mime_type      = "audio/webm,audio/x-matroska,video/webm,video/x-matroska",
+    .priv_class     = &matroska_class,
 };
 
 AVInputFormat ff_webm_dash_manifest_demuxer = {
